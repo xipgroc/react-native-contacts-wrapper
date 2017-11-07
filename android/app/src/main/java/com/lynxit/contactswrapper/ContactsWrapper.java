@@ -94,7 +94,11 @@ public class ContactsWrapper extends ReactContextBaseJavaModule implements Activ
         if (cursor != null) {
             mContactsPromise = contactsPromise;
             Intent intent = new Intent(Intent.ACTION_PICK);
-            intent.setType(ContactsContract.Contacts.CONTENT_TYPE);
+            if (requestCode == CONTACT_REQUEST) {
+              intent.setType(ContactsContract.Contacts.CONTENT_TYPE);
+            } else { // We are only interested in contacts with emails
+              intent.setType(ContactsContract.CommonDataKinds.Email.CONTENT_TYPE);
+            }
             mCtx = getCurrentActivity();
             if (intent.resolveActivity(mCtx.getPackageManager()) != null) {
                 mCtx.startActivityForResult(intent, requestCode);
@@ -188,13 +192,16 @@ public class ContactsWrapper extends ReactContextBaseJavaModule implements Activ
                         try {
 
 
-                            // get the contact id from the Uri
-                            String id = contactUri.getLastPathSegment();
+                            // // get the contact id from the Uri
+                            // String id = contactUri.getLastPathSegment();
+                            //
+                            // // query for everything email
+                            // Cursor cursor = mCtx.getContentResolver().query(ContactsContract.CommonDataKinds.Email.CONTENT_URI,
+                            //                                                 null, ContactsContract.CommonDataKinds.Email.CONTACT_ID + "=?", new String[]{id},
+                            //                                                 null);
 
-                            // query for everything email
-                            Cursor cursor = mCtx.getContentResolver().query(ContactsContract.CommonDataKinds.Email.CONTENT_URI,
-                                                                            null, ContactsContract.CommonDataKinds.Email.CONTACT_ID + "=?", new String[]{id},
-                                                                            null);
+                            String[] projection = new String[]{ContactsContract.CommonDataKinds.Email.DATA};
+                            Cursor cursor = mCtx.getContentResolver().query(contactUri, projection, null, null, null);
 
                             int emailIdx = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Email.DATA);
 
